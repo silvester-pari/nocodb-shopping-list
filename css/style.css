@@ -106,3 +106,29 @@ main {
 article {
     transition: all 0.3s ease;
 }
+
+/* App Shell Layout */
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    flex-shrink: 0;
+    z-index: 50;
+}
+
+main {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    padding-bottom: 80px; /* Space for FAB */
+    height: 100%;
+}
