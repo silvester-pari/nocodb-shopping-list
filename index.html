@@ -32,7 +32,7 @@
 <body class="dark">
     
     <!-- Top App Bar -->
-    <header class="surface-container" style="position: sticky; top: 0; z-index: 12;">
+    <header class="surface-container" style="position: sticky; top: 0; z-index: 50;">
         <nav>
             <button class="circle transparent">
               <img class="responsive" src="./assets/apple-touch-icon.png">
@@ -42,14 +42,11 @@
                 <i>settings</i>
             </button>
         </nav>
-    </header>
 
-    <main class="responsive">
-        
         <!-- Search & Filter -->
-        <div class="padding">
+        <div class="padding" style="overflow: hidden">
             <div class="row no-wrap middle-align">
-                <div class="field round prefix suffix surface-container max">
+                <div class="field round prefix suffix surface max">
                     <i>search</i>
                     <input type="text" id="search-input" placeholder="Search items...">
                     <a id="search-clear" style="visibility: hidden;"><i>close</i></a>
@@ -59,11 +56,14 @@
                 </button>
             </div>
             
-            <div id="filter-row" class="row scroll no-wrap small-space top-margin">
+            <div id="filter-row" class="row scroll no-wrap small-space top-margin" style="max-width: 100%;">
                 <!-- Chips injected by JS -->
                 <button class="chip fill">All</button>
             </div>
         </div>
+    </header>
+
+    <main class="responsive">
 
         <!-- List -->
         <ul id="app-list" class="list border">
