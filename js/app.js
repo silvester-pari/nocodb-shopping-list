@@ -355,7 +355,7 @@ class ShoppingApp {
                     <span></span>
                 </label>
                 <div class="max title-text pointer" style="min-width: 0;">
-                    <h6 class="small no-margin truncate overline ${isDone ? 'grey-text' : ''}">${displayTitle} ${tagHtml}</h6>
+                    <h6 class="small no-margin truncate ${isDone ? 'grey-text overline' : ''}">${displayTitle} ${tagHtml}</h6>
                 </div>
                 <button class="circle transparent">
                     <i>more_vert</i>
