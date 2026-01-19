@@ -6,7 +6,7 @@ A lightweight, offline-ready Progressive Web App (PWA) for managing a shared sho
 
 *   **Multi-User Sync:** Updates from other users appear automatically (polled every 5s).
 *   **Tags & Filtering:** Add tags to items (e.g., "Milk #aldi") to automatically generate filter chips.
-*   **Sorting:** Items are sorted alphabetically, with completed items moved to the bottom.
+*   **Sorting:** Items are sorted alphabetically, completed items are greyed out and have a strike-through effect.
 *   **Private Config:** API credentials are stored in your browser's LocalStorage, not in the code.
 *   **PWA Ready:** Installable on Android/iOS via "Add to Home Screen".
 
