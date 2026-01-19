@@ -377,7 +377,10 @@ class ShoppingApp {
                 <button class="circle transparent">
                     <i>more_vert</i>
                     <menu class="left no-wrap">
-                         <li class="delete-action"><a>Delete</a></li>
+                         <li class="delete-action">
+                            <i>delete</i>
+                            <a>Delete</a>
+                        </li>
                     </menu>
                 </button>
             </li>
