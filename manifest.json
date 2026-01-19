@@ -1,0 +1,20 @@
+{
+  "name": "Shopping List",
+  "short_name": "ShopList",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#78dc77",
+  "icons": [
+    {
+      "src": "https://www.beercss.com/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://www.beercss.com/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
