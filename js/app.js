@@ -13,6 +13,7 @@ class ShoppingApp {
             searchQuery: '',
             isPolling: false,
             currentEditId: null,
+            currentDeleteId: null,
             hideDone: false
         };
         this.pollInterval = null;
@@ -100,6 +101,14 @@ class ShoppingApp {
              }
         });
 
+        // Delete Confirm
+        document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
+            if (this.state.currentDeleteId) {
+                await this.deleteItem(this.state.currentDeleteId);
+                ui("#dialog-delete"); // Close
+            }
+        });
+
         // Search Input
         const searchInput = document.getElementById('search-input');
         const searchClear = document.getElementById('search-clear');
@@ -144,10 +153,8 @@ class ShoppingApp {
             // Delete action (Menu item)
             const deleteAction = e.target.closest('.delete-action');
             if (deleteAction) {
-                // Determine ID from parent 'li' or 'article' if needed, but 'article' variable is already set above
-                if(confirm("Delete this item?")) {
-                    await this.deleteItem(id);
-                }
+                this.state.currentDeleteId = id;
+                ui("#dialog-delete");
                 return;
             }
             

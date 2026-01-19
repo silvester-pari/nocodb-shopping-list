@@ -78,7 +78,7 @@
     </button>
 
     <!-- Add Item Dialog -->
-    <dialog id="dialog-add" class="bottom">
+    <dialog id="dialog-add" class="bottom large-padding">
         <h5>Add Item</h5>
         <div class="field label border">
             <input type="text" id="inp-new-title">
@@ -91,7 +91,7 @@
     </dialog>
 
     <!-- Edit Item Dialog -->
-    <dialog id="dialog-edit" class="bottom">
+    <dialog id="dialog-edit" class="bottom large-padding">
         <h5>Edit Item</h5>
         <div class="field label border">
             <input type="text" id="inp-edit-title">
@@ -104,7 +104,7 @@
     </dialog>
 
     <!-- Settings Dialog -->
-    <dialog id="dialog-settings" class="bottom">
+    <dialog id="dialog-settings" class="bottom large-padding">
         <h5>Connection Settings</h5>
         <p class="small-text">Connect to your NoCoDB Table.</p>
         
@@ -119,6 +119,16 @@
         
         <nav class="right-align">
             <button class="primary large" id="btn-save-settings">Save & Connect</button>
+        </nav>
+    </dialog>
+
+    <!-- Delete Confirmation Dialog -->
+    <dialog id="dialog-delete" class="bottom large-padding">
+        <h6>Delete Item</h6>
+        <p>Are you sure you want to delete this item?</p>
+        <nav class="right-align">
+            <button class="transparent border large" data-ui="#dialog-delete">Cancel</button>
+            <button class="error large" id="btn-confirm-delete">Delete</button>
         </nav>
     </dialog>
 
