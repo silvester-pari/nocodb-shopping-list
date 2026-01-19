@@ -299,16 +299,25 @@ class ShoppingApp {
     }
 
     renderFilters() {
-        const allTags = new Set();
+        const tagCounts = {};
         this.items.forEach(item => {
             const tags = this.extractTags(item.Title || '');
-            tags.forEach(t => allTags.add(t));
+            tags.forEach(t => {
+                tagCounts[t] = (tagCounts[t] || 0) + 1;
+            });
         });
 
         const filterContainer = document.getElementById('filter-row');
         let html = `<button class="chip ${this.state.filterTag === null ? 'fill' : ''}" onclick="window.app.setFilter(null)">All</button>`;
         
-        Array.from(allTags).sort().forEach(tag => {
+        // Sort tags by frequency (descending), then alphabetical
+        const sortedTags = Object.keys(tagCounts).sort((a, b) => {
+            const countDiff = tagCounts[b] - tagCounts[a];
+            if (countDiff !== 0) return countDiff;
+            return a.localeCompare(b);
+        });
+
+        sortedTags.forEach(tag => {
             const isActive = this.state.filterTag === tag;
             html += `<button class="chip ${isActive ? 'fill' : ''}" onclick="window.app.setFilter('${tag}')">${tag}</button>`;
         });
