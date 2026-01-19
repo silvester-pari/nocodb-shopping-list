@@ -38,7 +38,7 @@ export class NocoDBClient {
     async list(params = {}) {
         // Build query string
         const usp = new URLSearchParams();
-        usp.append('limit', '100'); // Reasonable default for shopping list
+        usp.append('limit', '300'); // Reasonable default for shopping list
         // usp.append('sort', '-CreatedAt'); // Removed to avoid 400 error on V3 (client sorts anyway)
         
         // Add extra params if needed
