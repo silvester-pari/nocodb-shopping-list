@@ -124,6 +124,7 @@ class ShoppingApp {
             this.state.hideDone = !this.state.hideDone;
             // Use 'filter_list' (filled/active) when hiding done items, 'filter_list_off' when showing all
             btnToggleDone.innerHTML = `<i>${this.state.hideDone ? 'filter_list' : 'filter_list_off'}</i>`;
+            btnToggleDone.classList.toggle('primary', this.state.hideDone);
             this.renderList();
         });
 
