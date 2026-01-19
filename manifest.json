@@ -1,6 +1,6 @@
 {
   "name": "Shopping List",
-  "short_name": "ShopList",
+  "short_name": "Shopping List",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#78dc77",
