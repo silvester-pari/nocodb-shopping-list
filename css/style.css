@@ -109,6 +109,9 @@ body.light {
     color: var(--on-primary);
 }
 
+.priority-high {
+    color: var(--error);
+}
 
 /* Ensure FAB doesn't cover content on mobile */
 main {
