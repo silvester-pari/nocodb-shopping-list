@@ -263,9 +263,6 @@ class ShoppingApp {
 
             // In bulk mode: clicking anywhere on the item toggles its selection
             if (this.state.bulkMode) {
-                if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
-                    e.preventDefault(); // Prevent the checkbox from visually toggling by itself
-                }
                 this.toggleBulkSelection(id);
                 return;
             }
@@ -640,15 +637,19 @@ class ShoppingApp {
             const tagHtml = tags.map(t => `<span class="tag-chip">${t}</span>`).join('');
 
             const liClass = [isDone ? 'item-done' : '', isSelected ? 'item-selected' : ''].filter(Boolean).join(' ');
-            const checkboxChecked = this.state.bulkMode ? isSelected : isDone;
-            const checkboxClass = !this.state.bulkMode && isDone ? 'grey-text' : '';
+
+            // In bulk mode use a circle icon (Material multi-select pattern) so
+            // the selection state is visually distinct from the square done-checkbox.
+            const leadingControl = this.state.bulkMode
+                ? `<i class="bulk-circle-icon ${isSelected ? 'primary-text' : ''}">${isSelected ? 'check_circle' : 'radio_button_unchecked'}</i>`
+                : `<label class="checkbox large ${isDone ? 'grey-text' : ''}">
+                       <input type="checkbox" ${isDone ? 'checked' : ''}>
+                       <span></span>
+                   </label>`;
 
             return `
             <li class="${liClass}" data-id="${item.Id}">
-                <label class="checkbox large ${checkboxClass}">
-                    <input type="checkbox" ${checkboxChecked ? 'checked' : ''}>
-                    <span></span>
-                </label>
+                ${leadingControl}
                 <div class="max title-text pointer" style="min-width: 0;">
                     <h6 class="small no-margin truncate ${isDone ? 'grey-text overline' : ''}">${displayTitle} ${tagHtml}</h6>
                 </div>
