@@ -9,7 +9,7 @@ class ShoppingApp {
             token: ''
         };
         this.state = {
-            filterTag: null,
+            filterTags: [],
             searchQuery: '',
             isPolling: false,
             currentEditId: null,
@@ -309,7 +309,10 @@ class ShoppingApp {
         });
 
         const filterContainer = document.getElementById('filter-row');
-        let html = `<button class="chip ${this.state.filterTag === null ? 'fill' : ''}" onclick="window.app.setFilter(null)">All</button>`;
+        const activeCount = this.state.filterTags.length;
+        const isAllActive = activeCount === 0;
+        const badgeHtml = activeCount > 0 ? `<span class="filter-reset-badge">${activeCount}</span>` : '';
+        let html = `<button class="chip ${isAllActive ? 'fill' : ''}" onclick="window.app.setFilter(null)" title="Clear all filters">All${badgeHtml}</button>`;
         
         // Sort tags by frequency (descending), then alphabetical
         const sortedTags = Object.keys(tagCounts).sort((a, b) => {
@@ -319,7 +322,7 @@ class ShoppingApp {
         });
 
         sortedTags.forEach(tag => {
-            const isActive = this.state.filterTag === tag;
+            const isActive = this.state.filterTags.includes(tag);
             html += `<button class="chip ${isActive ? 'fill' : ''}" onclick="window.app.setFilter('${tag}')">${tag}</button>`;
         });
         
@@ -327,8 +330,17 @@ class ShoppingApp {
     }
 
     setFilter(tag) {
-        this.state.filterTag = tag;
-        this.renderAll(); // Re-render chips to update active state and list
+        if (tag === null) {
+            this.state.filterTags = [];
+        } else {
+            const idx = this.state.filterTags.indexOf(tag);
+            if (idx === -1) {
+                this.state.filterTags.push(tag);
+            } else {
+                this.state.filterTags.splice(idx, 1);
+            }
+        }
+        this.renderAll();
     }
 
     renderList() {
@@ -339,8 +351,11 @@ class ShoppingApp {
             const title = (item.Title || '').toLowerCase();
             // Search
             if (this.state.searchQuery && !title.includes(this.state.searchQuery)) return false;
-            // Tag
-            if (this.state.filterTag && !title.includes(this.state.filterTag.toLowerCase())) return false;
+            // Tag (AND logic: item must match all selected tags)
+            if (this.state.filterTags.length > 0) {
+                const itemTags = this.extractTags(item.Title || '').map(t => t.toLowerCase());
+                if (!this.state.filterTags.every(ft => itemTags.includes(ft.toLowerCase()))) return false;
+            }
             // Hide Done
             if (this.state.hideDone && item.IsDone) return false;
             return true;
