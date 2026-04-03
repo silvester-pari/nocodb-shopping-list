@@ -14,9 +14,13 @@ class ShoppingApp {
             isPolling: false,
             currentEditId: null,
             currentDeleteId: null,
-            hideDone: false
+            hideDone: false,
+            bulkMode: false,
+            selectedItems: new Set()
         };
         this.pollInterval = null;
+        this._longPressTimer = null;
+        this._preventNextClick = false;
         
         // Bind methods
         this.init = this.init.bind(this);
@@ -138,11 +142,132 @@ class ShoppingApp {
             this.renderList();
         });
 
+        // Bulk Toolbar Buttons
+        document.getElementById('btn-bulk-exit').addEventListener('click', () => this.exitBulkMode());
+
+        document.getElementById('btn-bulk-select-all').addEventListener('click', () => this.bulkSelectAll());
+
+        document.getElementById('btn-bulk-toggle-done').addEventListener('click', () => this.bulkToggleDone());
+
+        document.getElementById('btn-bulk-tag').addEventListener('click', () => {
+            document.getElementById('inp-bulk-tag').value = '';
+            ui('#dialog-bulk-tag');
+        });
+
+        document.getElementById('btn-bulk-tag-add').addEventListener('click', async () => {
+            const raw = document.getElementById('inp-bulk-tag').value.trim();
+            if (!raw) return;
+            const tag = this._normalizeTag(raw);
+            ui('#dialog-bulk-tag');
+            await this.bulkApplyTag(tag, true);
+        });
+
+        document.getElementById('btn-bulk-tag-remove').addEventListener('click', async () => {
+            const raw = document.getElementById('inp-bulk-tag').value.trim();
+            if (!raw) return;
+            const tag = this._normalizeTag(raw);
+            ui('#dialog-bulk-tag');
+            await this.bulkApplyTag(tag, false);
+        });
+
+        document.getElementById('btn-bulk-delete').addEventListener('click', () => {
+            const count = this.state.selectedItems.size;
+            document.getElementById('bulk-delete-confirm-text').textContent =
+                `Are you sure you want to delete ${count} selected item${count !== 1 ? 's' : ''}?`;
+            ui('#dialog-bulk-delete');
+        });
+
+        document.getElementById('btn-confirm-bulk-delete').addEventListener('click', async () => {
+            ui('#dialog-bulk-delete');
+            await this.bulkDeleteSelected();
+        });
+
+        // Long press detection for entering bulk mode
+        let touchStartX = 0, touchStartY = 0;
+
+        const appList = document.getElementById('app-list');
+
+        appList.addEventListener('touchstart', (e) => {
+            this._preventNextClick = false;
+            const listItem = e.target.closest('li[data-id]');
+            if (!listItem || this.state.bulkMode) return;
+            const id = String(listItem.dataset.id);
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            this._longPressTimer = setTimeout(() => {
+                this._preventNextClick = true;
+                if (navigator.vibrate) navigator.vibrate(50);
+                this.enterBulkMode(id);
+            }, 500);
+        }, { passive: true });
+
+        appList.addEventListener('touchmove', (e) => {
+            if (!this._longPressTimer) return;
+            const dx = Math.abs(e.touches[0].clientX - touchStartX);
+            const dy = Math.abs(e.touches[0].clientY - touchStartY);
+            if (dx > 10 || dy > 10) {
+                clearTimeout(this._longPressTimer);
+                this._longPressTimer = null;
+            }
+        }, { passive: true });
+
+        appList.addEventListener('touchend', () => {
+            if (this._longPressTimer) {
+                clearTimeout(this._longPressTimer);
+                this._longPressTimer = null;
+            }
+        });
+
+        let mouseStartX = 0, mouseStartY = 0;
+
+        appList.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return;
+            this._preventNextClick = false;
+            const listItem = e.target.closest('li[data-id]');
+            if (!listItem || this.state.bulkMode) return;
+            const id = String(listItem.dataset.id);
+            mouseStartX = e.clientX;
+            mouseStartY = e.clientY;
+            this._longPressTimer = setTimeout(() => {
+                this._preventNextClick = true;
+                this.enterBulkMode(id);
+            }, 500);
+        });
+
+        appList.addEventListener('mousemove', (e) => {
+            if (!this._longPressTimer) return;
+            const dx = Math.abs(e.clientX - mouseStartX);
+            const dy = Math.abs(e.clientY - mouseStartY);
+            if (dx > 10 || dy > 10) {
+                clearTimeout(this._longPressTimer);
+                this._longPressTimer = null;
+            }
+        });
+
+        appList.addEventListener('mouseup', () => {
+            if (this._longPressTimer) {
+                clearTimeout(this._longPressTimer);
+                this._longPressTimer = null;
+            }
+        });
+
         // Delegate clicks for list items (Toggle, Delete, Edit)
         document.getElementById('app-list').addEventListener('click', async (e) => {
+            // Suppress click that immediately follows a long press
+            if (this._preventNextClick) {
+                this._preventNextClick = false;
+                return;
+            }
+
             const listItem = e.target.closest('li[data-id]');
             if (!listItem) return;
-            const id = listItem.dataset.id;
+            const id = String(listItem.dataset.id);
+
+            // In bulk mode: clicking anywhere on the item toggles its selection
+            if (this.state.bulkMode) {
+                this.toggleBulkSelection(id);
+                return;
+            }
             
             // Checkbox click
             if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
@@ -231,7 +356,7 @@ class ShoppingApp {
         if (!this.client) return;
         // Optimistic UI update could happen here
         // Update local state first
-        const item = this.items.find(i => i.Id == id); // NocoDB uses 'Id' usually
+        const item = this.items.find(i => String(i.Id) === String(id));
         if (item) item.IsDone = isDone;
         this.renderList(); 
 
@@ -247,7 +372,7 @@ class ShoppingApp {
         if (!this.client) return;
         try {
             await this.client.delete(id);
-            this.items = this.items.filter(i => i.Id != id);
+            this.items = this.items.filter(i => String(i.Id) !== String(id));
             this.renderList();
         } catch (err) {
             alert("Failed to delete");
@@ -255,7 +380,7 @@ class ShoppingApp {
     }
     
     async openEditDialog(id) {
-        const item = this.items.find(i => i.Id == id);
+        const item = this.items.find(i => String(i.Id) === String(id));
         if(!item) return;
         
         this.state.currentEditId = id;
@@ -270,7 +395,7 @@ class ShoppingApp {
     async saveEdit(id, newTitle) {
          try {
             // Optimistic update
-            const item = this.items.find(i => i.Id == id);
+            const item = this.items.find(i => String(i.Id) === String(id));
             if (item) item.Title = newTitle;
             this.renderList();
 
@@ -279,6 +404,134 @@ class ShoppingApp {
         } catch (err) {
             alert("Failed to update");
             this.fetchItems(); // Revert
+        }
+    }
+
+    // --- Bulk Editing ---
+
+    _normalizeTag(raw) {
+        return raw.startsWith('#') ? raw : '#' + raw;
+    }
+
+    enterBulkMode(id) {
+        this.state.bulkMode = true;
+        this.state.selectedItems = new Set([String(id)]);
+        document.body.classList.add('bulk-mode-active');
+        document.getElementById('fab-add').style.display = 'none';
+        document.getElementById('bulk-toolbar').style.display = 'block';
+        this.renderList();
+        this.updateBulkToolbar();
+    }
+
+    exitBulkMode() {
+        this.state.bulkMode = false;
+        this.state.selectedItems = new Set();
+        document.body.classList.remove('bulk-mode-active');
+        document.getElementById('fab-add').style.display = '';
+        document.getElementById('bulk-toolbar').style.display = 'none';
+        this.renderList();
+    }
+
+    toggleBulkSelection(id) {
+        const sid = String(id);
+        if (this.state.selectedItems.has(sid)) {
+            this.state.selectedItems.delete(sid);
+            if (this.state.selectedItems.size === 0) {
+                this.exitBulkMode();
+                return;
+            }
+        } else {
+            this.state.selectedItems.add(sid);
+        }
+        this.renderList();
+        this.updateBulkToolbar();
+    }
+
+    updateBulkToolbar() {
+        const count = this.state.selectedItems.size;
+        document.getElementById('bulk-count-label').textContent =
+            `${count} item${count !== 1 ? 's' : ''} selected`;
+    }
+
+    bulkSelectAll() {
+        const listItems = document.getElementById('app-list').querySelectorAll('li[data-id]');
+        const visibleIds = [...listItems].map(li => String(li.dataset.id));
+        const allSelected = visibleIds.every(id => this.state.selectedItems.has(id));
+        if (allSelected) {
+            // Deselect all and exit bulk mode
+            this.exitBulkMode();
+        } else {
+            visibleIds.forEach(id => this.state.selectedItems.add(id));
+            this.renderList();
+            this.updateBulkToolbar();
+        }
+    }
+
+    async bulkToggleDone() {
+        if (!this.client || this.state.selectedItems.size === 0) return;
+        const selectedIds = [...this.state.selectedItems];
+        const selectedItems = this.items.filter(i => selectedIds.includes(String(i.Id)));
+        // If all selected are done, unmark; otherwise mark all as done
+        const allDone = selectedItems.every(i => i.IsDone);
+        const newDoneState = !allDone;
+
+        // Optimistic update
+        selectedItems.forEach(item => { item.IsDone = newDoneState; });
+        this.renderList();
+
+        try {
+            await Promise.all(selectedIds.map(id => this.client.update(id, { IsDone: newDoneState })));
+        } catch (err) {
+            console.error(err);
+            this.fetchItems();
+        }
+    }
+
+    async bulkApplyTag(tag, add) {
+        if (!this.client || this.state.selectedItems.size === 0) return;
+        const selectedIds = [...this.state.selectedItems];
+        const selectedItems = this.items.filter(i => selectedIds.includes(String(i.Id)));
+        // Matches the tag followed by a space, another tag, or end-of-string to avoid partial matches
+        const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const tagRegex = new RegExp(escaped + '(?=[\\s#]|$)', 'g');
+
+        // Optimistic update
+        if (add) {
+            selectedItems.forEach(item => {
+                if (!item.Title.includes(tag)) {
+                    item.Title = (item.Title.trim() + ' ' + tag).trim();
+                }
+            });
+        } else {
+            selectedItems.forEach(item => {
+                // Remove the tag, then collapse any resulting double spaces
+                item.Title = item.Title.replace(tagRegex, '').replace(/\s{2,}/g, ' ').trim();
+            });
+        }
+        this.renderList();
+
+        try {
+            await Promise.all(selectedItems.map(item =>
+                this.client.update(item.Id, { Title: item.Title })
+            ));
+            this.fetchItems();
+        } catch (err) {
+            console.error(err);
+            this.fetchItems();
+        }
+    }
+
+    async bulkDeleteSelected() {
+        if (!this.client || this.state.selectedItems.size === 0) return;
+        const selectedIds = [...this.state.selectedItems];
+        try {
+            await Promise.all(selectedIds.map(id => this.client.delete(id)));
+            this.items = this.items.filter(i => !selectedIds.includes(String(i.Id)));
+            this.exitBulkMode();
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete some items");
+            this.fetchItems();
         }
     }
 
@@ -297,6 +550,9 @@ class ShoppingApp {
     renderAll() {
         this.renderFilters();
         this.renderList();
+        if (this.state.bulkMode) {
+            this.updateBulkToolbar();
+        }
     }
 
     renderFilters() {
@@ -378,19 +634,28 @@ class ShoppingApp {
             const tags = this.extractTags(item.Title || '');
             const displayTitle = this.getTitleWithoutTags(item.Title || '');
             const isDone = item.IsDone;
+            const isSelected = this.state.bulkMode && this.state.selectedItems.has(String(item.Id));
             
             const tagHtml = tags.map(t => `<span class="tag-chip">${t}</span>`).join('');
 
+            const liClass = [isDone ? 'item-done' : '', isSelected ? 'item-selected' : ''].filter(Boolean).join(' ');
+
+            // In bulk mode use a circle icon (Material multi-select pattern) so
+            // the selection state is visually distinct from the square done-checkbox.
+            const leadingControl = this.state.bulkMode
+                ? `<i class="bulk-circle-icon large ${isSelected ? 'primary-text' : ''}">${isSelected ? 'check_circle' : 'radio_button_unchecked'}</i>`
+                : `<label class="checkbox large ${isDone ? 'grey-text' : ''}">
+                       <input type="checkbox" ${isDone ? 'checked' : ''}>
+                       <span></span>
+                   </label>`;
+
             return `
-            <li class="${isDone ? 'item-done' : ''}" data-id="${item.Id}">
-                <label class="checkbox large ${isDone ? 'grey-text' : ''}">
-                    <input type="checkbox" ${isDone ? 'checked' : ''}>
-                    <span></span>
-                </label>
+            <li class="${liClass}" data-id="${item.Id}">
+                ${leadingControl}
                 <div class="max title-text pointer" style="min-width: 0;">
                     <h6 class="small no-margin truncate ${isDone ? 'grey-text overline' : ''}">${displayTitle} ${tagHtml}</h6>
                 </div>
-                <button class="circle transparent">
+                ${!this.state.bulkMode ? `<button class="circle transparent">
                     <i>more_vert</i>
                     <menu class="left no-wrap">
                          <li class="delete-action">
@@ -398,7 +663,7 @@ class ShoppingApp {
                             <a>Delete</a>
                         </li>
                     </menu>
-                </button>
+                </button>` : ''}
             </li>
             `;
         }).join('');
