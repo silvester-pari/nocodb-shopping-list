@@ -73,9 +73,31 @@
     </main>
 
     <!-- FAB Add Button -->
-    <button class="fixed bottom right extra margin primary square round" data-ui="#dialog-add">
+    <button id="fab-add" class="fixed bottom right extra margin primary square round" data-ui="#dialog-add">
         <i>add</i>
     </button>
+
+    <!-- Bulk Edit Toolbar (shown in bulk mode) -->
+    <div id="bulk-toolbar" style="display:none;">
+        <nav class="surface-container-high padding">
+            <button class="circle transparent" id="btn-bulk-exit" title="Exit selection">
+                <i>close</i>
+            </button>
+            <span id="bulk-count-label" class="max left-align">0 selected</span>
+            <button class="circle transparent" id="btn-bulk-select-all" title="Select / deselect all">
+                <i>select_all</i>
+            </button>
+            <button class="circle transparent" id="btn-bulk-toggle-done" title="Toggle done">
+                <i>checklist</i>
+            </button>
+            <button class="circle transparent" id="btn-bulk-tag" title="Add / remove tag">
+                <i>label</i>
+            </button>
+            <button class="circle transparent" id="btn-bulk-delete" title="Delete selected">
+                <i>delete</i>
+            </button>
+        </nav>
+    </div>
 
     <!-- Add Item Dialog -->
     <dialog id="dialog-add" class="bottom large-padding">
@@ -129,6 +151,30 @@
         <nav class="right-align">
             <button class="transparent border large" data-ui="#dialog-delete">Cancel</button>
             <button class="error large" id="btn-confirm-delete">Delete</button>
+        </nav>
+    </dialog>
+
+    <!-- Bulk Tag Dialog -->
+    <dialog id="dialog-bulk-tag" class="bottom large-padding">
+        <h5>Add / Remove Tag</h5>
+        <div class="field label border">
+            <input type="text" id="inp-bulk-tag" placeholder="#groceries">
+            <label>Tag (e.g. #groceries)</label>
+        </div>
+        <nav class="right-align">
+            <button class="transparent border large" data-ui="#dialog-bulk-tag">Cancel</button>
+            <button class="secondary large" id="btn-bulk-tag-remove">Remove</button>
+            <button class="primary large" id="btn-bulk-tag-add">Add</button>
+        </nav>
+    </dialog>
+
+    <!-- Bulk Delete Confirmation Dialog -->
+    <dialog id="dialog-bulk-delete" class="bottom large-padding">
+        <h6>Delete Selected Items</h6>
+        <p id="bulk-delete-confirm-text">Are you sure you want to delete the selected items?</p>
+        <nav class="right-align">
+            <button class="transparent border large" data-ui="#dialog-bulk-delete">Cancel</button>
+            <button class="error large" id="btn-confirm-bulk-delete">Delete</button>
         </nav>
     </dialog>
 

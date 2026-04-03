@@ -118,6 +118,35 @@ main {
     padding-bottom: 80px; 
 }
 
+/* Bulk edit toolbar */
+#bulk-toolbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+/* Selected item highlight in bulk mode */
+body.bulk-mode-active li.item-selected {
+    background-color: var(--primary-container);
+}
+
+body.bulk-mode-active li.item-selected .title-text h6 {
+    color: var(--on-primary-container);
+}
+
+/* Push content up when bulk toolbar is visible */
+body.bulk-mode-active main {
+    padding-bottom: 72px;
+}
+
+/* Prevent text selection during long press */
+#app-list {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
 /* Smooth transitions for list items */
 article {
     transition: all 0.3s ease;
