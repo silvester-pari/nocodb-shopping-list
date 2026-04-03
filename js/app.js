@@ -125,6 +125,7 @@ class ShoppingApp {
             this.state.searchQuery = '';
             searchClear.style.visibility = 'hidden';
             this.renderList();
+            searchInput.focus();
         });
 
         // Toggle Done Visibility
