@@ -188,6 +188,7 @@ class ShoppingApp {
         const appList = document.getElementById('app-list');
 
         appList.addEventListener('touchstart', (e) => {
+            this._preventNextClick = false;
             const listItem = e.target.closest('li[data-id]');
             if (!listItem || this.state.bulkMode) return;
             const id = String(listItem.dataset.id);
@@ -221,6 +222,7 @@ class ShoppingApp {
 
         appList.addEventListener('mousedown', (e) => {
             if (e.button !== 0) return;
+            this._preventNextClick = false;
             const listItem = e.target.closest('li[data-id]');
             if (!listItem || this.state.bulkMode) return;
             const id = String(listItem.dataset.id);
