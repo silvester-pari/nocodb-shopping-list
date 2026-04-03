@@ -641,7 +641,7 @@ class ShoppingApp {
             // In bulk mode use a circle icon (Material multi-select pattern) so
             // the selection state is visually distinct from the square done-checkbox.
             const leadingControl = this.state.bulkMode
-                ? `<i class="bulk-circle-icon ${isSelected ? 'primary-text' : ''}">${isSelected ? 'check_circle' : 'radio_button_unchecked'}</i>`
+                ? `<i class="bulk-circle-icon large ${isSelected ? 'primary-text' : ''}">${isSelected ? 'check_circle' : 'radio_button_unchecked'}</i>`
                 : `<label class="checkbox large ${isDone ? 'grey-text' : ''}">
                        <input type="checkbox" ${isDone ? 'checked' : ''}>
                        <span></span>

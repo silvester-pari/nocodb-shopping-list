@@ -129,14 +129,9 @@ main {
 
 /* Bulk selection circle icon (replaces square checkbox in bulk mode) */
 .bulk-circle-icon {
-    font-size: 1.5rem;
-    width: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
     color: var(--on-surface-variant);
     cursor: pointer;
+    width: 2rem;
 }
 
 .bulk-circle-icon.primary-text {
